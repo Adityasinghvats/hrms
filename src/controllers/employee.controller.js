@@ -10,7 +10,16 @@ const createEmployee = asyncHandler(async(req, res) => {
     try {
         console.log(req.body)
         const {name, email, password, phoneNo, position, department, role} = req.body;
-        console.log(name, email, password, phoneNo, position, department, role)
+        if(!name || !email || !password || !phoneNo || !position || !department || !role) {
+            throw new ApiError(400, "All fields are required")
+        }
+        let existingEmployee = await Employee.findOne({email});
+        if(existingEmployee){
+            return res.status(200).json(
+                new ApiResponse(200, existingEmployee, "Employee already exists")
+            )
+        }
+
         // First try to find if role already exists
         let roleId = await Role.findOne({ name: role.toLowerCase() });
     
@@ -22,20 +31,23 @@ const createEmployee = asyncHandler(async(req, res) => {
             }
         }
         console.log("Role:", roleId);
+
         let newUser = await User.findOne({email});
         if(!newUser){
-            newUser = await registerUser({
-                username: email.split('@')[0], // Create username from email
-                email, 
-                fullname: name,
-                password: password,
-                roleId // Pass the role ID, not the entire role object
-            });
-            if(!newUser){
-                throw new ApiError(500, "User not created while registering a user")
+            try {
+                newUser = await registerUser({
+                    username: email.split('@')[0], // Create username from email
+                    email, 
+                    fullname: name,
+                    password: password,
+                    roleId // Pass the role ID, not the entire role object
+                });
+            } catch (error) {
+                throw new ApiError(500, `NewUser creation failed: ${error.message}`)
             }
         }
         console.log(newUser)
+
         const employeeData = {  // Fixed typo from employeData to employeeData
             employeeId: newUser._id,
             name: newUser.fullname,
@@ -59,13 +71,10 @@ const createEmployee = asyncHandler(async(req, res) => {
             console.log("Error creating employee:", error);
             // Cleanup the created user if employee creation fails
             await User.findByIdAndDelete(newUser._id);
-            throw new ApiError(500, `Employee creation failed: ${error.message}`);
+            throw new ApiError(500, `Employee object creation failed: ${error.message}`);
         }
         console.log(employee)
-        if(!employee){
-            await User.findByIdAndDelete(newUser._id);
-            throw new ApiError(500, "Employee not created while registering a user")
-        }
+
         return res
         .status(201)
         .json( new ApiResponse(201, employee, "Employee created successfully"))
@@ -132,7 +141,9 @@ const updateEmployee = asyncHandler(async(req, res) => {
 })
 const deleteEmployee = asyncHandler(async(req, res) => {
     try {
-        await Employee.findByIdAndDelete(req.params.id);
+        const employee = await Employee.findById(req.params.id);
+        await User.findByIdAndDelete(employee.employeeId);
+        await Employee.findByIdAndDelete(employee);
         return res.status(200).json(
             new ApiResponse(200, undefined, "Employee deleted successfully")
         )
