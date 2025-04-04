@@ -31,3 +31,4 @@ const createEmployee = async(req, res) => {
 //update employee by id
 //delete employee by id
 //search for employee based on query parameter with search endpoint and parameter as query string
+// export -> all data in json format
