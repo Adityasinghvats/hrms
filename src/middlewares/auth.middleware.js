@@ -26,15 +26,11 @@ const verifyRole = (roles) => {
         try {
           const user = await User.findById(req.user.id).populate('role')
           if(!user || !roles.map(role => role.toLowerCase()).includes(user?.role?.name?.toLowerCase())){
-            //make into api response
-            return new ApiResponse(403, user, "Access denied");
-            // return res.status(403).json({ message: "Access denied" });
+            return res.status(403).json(new ApiResponse(403, user, "Access denied"));
           }
           next();  
         } catch (error) {
-            //make into api error
             throw new ApiError(500, error?.message || "Internal server error");
-            // res.status(500).json({ message: "Internal server error" });
         }
     }
 }
