@@ -4,6 +4,14 @@ This is a backend API built using `Express` and `Node.js`. The API implements ro
 
 ## API Endpoints
 
+### Admin 
+```javascript
+{
+    "email": "aditya@gmail.com",
+    "password": "aditya@01"
+}
+```
+
 ## Healthcheck
 
 ### `GET` Healthcheck 
