@@ -1,8 +1,9 @@
-import User from "../model/user.model.js";
+import {User} from "../model/user.model.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import {asyncHandler} from "../utils/AsyncHandler.js";
 import {ApiError} from "../utils/ApiError.js";
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 //login,logout,refreshtoken
 //create refreshtoken so that  we can use it while creating the user
 const generateAccessAndRefreshToken = async (userId) => {
@@ -23,48 +24,58 @@ const generateAccessAndRefreshToken = async (userId) => {
         throw new ApiError(500, "Failed to generate access and refresh token")
     }
 }
-const registerUser = asyncHandler(async (req, res) => {
-    const {name, email, password, role} = req.body
+const registerUser = asyncHandler(async (userData) => {
+    const {
+        username, // Create username from email
+        email, 
+        fullname,
+        password, 
+        roleId
+    } = userData
     if(
-        [name, email, password, role].some((field) => field?.trim()==="")
-      ){
-          throw new ApiError(400, "All fields are required")
-      }
-      //check if user already exists in mongodb using or operator
-      const existedUser = await User.findOne({
-          $or: [{username}, {email}]
-      })
-  
-      if(existedUser){
-          throw new ApiError(409, "User with email or username already exists")
-      }
+        [username, email, fullname, password, roleId].some((field) => !field)
+    ){
+        throw new ApiError(400, "All fields are required")
+    }
+    //check if user already exists in mongodb using or operator
+    const existedUser = await User.findOne({
+        $or: [
+            { username: username.toLowerCase() }, 
+            { email: email.toLowerCase() }
+        ]
+    })
+
+    if(existedUser){
+        throw new ApiError(409, "User with email or username already exists")
+    }
     try {
+        // const salt = await bcrypt.genSalt(10)
+        // const hashedPassword = await bcrypt.hash(password, salt);
         const user = await User.create({
-            username: name,
-            email: email,
-            fullname: name,
+            username: username.toLowerCase(),
+            email: email.toLowerCase(),
+            fullname: fullname.toLowerCase(),
             password: password,
-            role: role._id
+            role: roleId._id
         })
+        
         const createdUser = await User.findById(user._id).select("-password -refreshToken")
         if(!createdUser){
             throw new ApiError(500, "User not created while registering a user")
         }
-        return res
-        .status(201)
-        .json( new ApiResponse(201, createdUser, "User registered successfully"))
+        return createdUser
     } catch (error) {
-        console.log("user creation failed");
-        throw new ApiError(500, "User not created while registering a user and images where deleted")
-
+        console.log("user creation failed", error);
+        throw new ApiError(500, "User not created while registering a user")
     }
 })
 const loginUser = asyncHandler(async(req, res) => {
+    console.log(req.body);
     const {name, email, password} = req.body
     if(!email || !password){
         throw new ApiError(400, "Email and password is required");
     }
-    const user = User.findOne({
+    const user = await User.findOne({
         $or: [{name}, {email}]
     })
     if(!user){

@@ -31,14 +31,12 @@ const employeeSchema = new Schema(
         department: {
             type: String,
             required: true,
-            unique: true,
             lowercase: true,
             trim: true,
         },
         position:{
             type: String,
             required: true,
-            unique: true,
             lowercase: true,
             trim: true,
         },

@@ -1,32 +1,69 @@
-import Role from "../model/role.model.js";
-import Employee from "../model/employee.model.js";
+import {Role} from "../model/role.model.js";
+import {Employee} from "../model/employee.model.js";
 import { registerUser } from "./user.controller.js";
 import {asyncHandler} from "../utils/AsyncHandler.js";
-import ApiResponse from "../utils/ApiResponse.js";
-import ApiError from "../utils/ApiError.js";
+import {ApiResponse} from "../utils/ApiResponse.js";
+import {ApiError} from "../utils/ApiError.js";
+import { User } from "../model/user.model.js";
 
 const createEmployee = asyncHandler(async(req, res) => {
-    //add error handling for when user is not created or role is not created
     try {
+        console.log(req.body)
         const {name, email, password, phoneNo, position, department, role} = req.body;
-        const roleId = await Role.create({name:role});
-        if(!roleId){
-            throw new ApiError(500, "Role not created while registering a user")
+        console.log(name, email, password, phoneNo, position, department, role)
+        // First try to find if role already exists
+        let roleId = await Role.findOne({ name: role.toLowerCase() });
+    
+        // If role doesn't exist, create it
+        if (!roleId) {
+            roleId = await Role.create({ name: role.toLowerCase() });
+            if (!roleId) {
+                throw new ApiError(500, "Role not created while registering a user")
+            }
         }
-        const newUser = await registerUser({name, email, password, roleId})
+        console.log("Role:", roleId);
+        let newUser = await User.findOne({email});
         if(!newUser){
-            throw new ApiError(500, "User not created while registering a user")
+            newUser = await registerUser({
+                username: email.split('@')[0], // Create username from email
+                email, 
+                fullname: name,
+                password: password,
+                roleId // Pass the role ID, not the entire role object
+            });
+            if(!newUser){
+                throw new ApiError(500, "User not created while registering a user")
+            }
         }
-        const employee = await Employee.create({
+        console.log(newUser)
+        const employeeData = {  // Fixed typo from employeData to employeeData
             employeeId: newUser._id,
-            name,
-            email,
+            name: newUser.fullname,
+            email: newUser.email,
             phoneNo,
             department,
             position,
             joiningDate: new Date(),
-        })
+        };
+        console.log("Creating employee with data:", employeeData);
+        let employee = await Employee.findOne({email});
+        if(employee){
+            return res.status(200).json(
+                new ApiResponse(200, employee, "Employee already exists")
+            )
+        }
+        
+        try {
+            employee = await Employee.create(employeeData);  // Using correct variable name
+        } catch (error) {
+            console.log("Error creating employee:", error);
+            // Cleanup the created user if employee creation fails
+            await User.findByIdAndDelete(newUser._id);
+            throw new ApiError(500, `Employee creation failed: ${error.message}`);
+        }
+        console.log(employee)
         if(!employee){
+            await User.findByIdAndDelete(newUser._id);
             throw new ApiError(500, "Employee not created while registering a user")
         }
         return res
@@ -38,6 +75,7 @@ const createEmployee = asyncHandler(async(req, res) => {
     }
 })
 const getAllEmployees = asyncHandler(async(req, res) => {
+    console.log("Fetching all employees")
     try {
         const employees = await Employee.find().populate('employeeId');
         
@@ -85,7 +123,7 @@ const updateEmployee = asyncHandler(async(req, res) => {
             {new: true}
         )
         return res.status(200).json(
-            new ApiResponse(200, updatedEmployee, "Employee fetched successfully")
+            new ApiResponse(200, updatedEmployee, "Employee updated successfully")
         )
     } catch (error) {
         console.log("Error finding employee by id", error?.message)

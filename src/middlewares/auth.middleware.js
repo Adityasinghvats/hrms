@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import User from "../model/user.model.js";
-import ApiError from '../utils/ApiError.js';
-import ApiResponse from '../utils/ApiResponse.js';
+import {User} from "../model/user.model.js";
+import {ApiError} from '../utils/ApiError.js';
+import {ApiResponse} from '../utils/ApiResponse.js';
 //verify jwt
 const verifyJwt = async(req,_, next) => {
   const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer", "")

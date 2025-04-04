@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { verifyRole, verifyJwt } from "../middlewares/auth.middleware";
+import { verifyRole, verifyJwt } from "../middlewares/auth.middleware.js";
 import { 
     createEmployee,
     getAllEmployees,
@@ -11,10 +11,11 @@ import {
 
 const router = Router()
 router.route("/").post(verifyJwt, verifyRole(["admin"]), createEmployee);
-router.route("/").get(verifyToken, getAllEmployees);
-router.route("/:id").get(verifyToken, getEmployeeById);
-router.route("/:id").put(verifyToken, verifyRole(["admin"]), updateEmployee);
-router.route("/:id").delete(verifyToken, verifyRole(["admin"]), deleteEmployee);
-router.route("/").get(verifyToken, verifyRole(["admin"]), getData);
+// router.route("/").post(createEmployee);
+router.route("/").get(getAllEmployees);
+router.route("/download").get(verifyJwt, verifyRole(["admin"]), getData);
+router.route("/:id").get(verifyJwt, getEmployeeById);
+router.route("/:id").put(verifyJwt, verifyRole(["admin"]), updateEmployee);
+router.route("/:id").delete(verifyJwt, verifyRole(["admin"]), deleteEmployee);
 
 export default router;
