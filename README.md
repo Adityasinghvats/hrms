@@ -8,7 +8,7 @@ This is a backend API built using `Express` and `Node.js`. The API implements ro
 
 ### `GET` Healthcheck 
 ```bash
-http://localhost:3000/api/v1/healthcheck
+https://hrms-579n.onrender.com/api/v1/healthcheck
 ```
 >This endpoint makes an HTTP GET request to the 
 `http://localhost:3000/api/v1/healthcheck` URL.
@@ -21,7 +21,7 @@ http://localhost:3000/api/v1/healthcheck
 
 ### POST `Logout`
 ```bash
-http://localhost:3000/api/v1/users/logout
+https://hrms-579n.onrender.com/api/v1/users/logout
 ```
 >The `POST` /users/logout endpoint is used to log out a user from the HRMS system.
 
@@ -45,7 +45,7 @@ http://localhost:3000/api/v1/users/logout
 
 ### `POST` Login
 ```bash
-http://localhost:3000/api/v1/users/login
+https://hrms-579n.onrender.com/api/v1/users/login
 ```
 >Login User
 This endpoint allows users to log in by providing their email and password.
@@ -119,7 +119,7 @@ This endpoint allows users to log in by providing their email and password.
 ```
 ### `POST` Refresh-token
 ```bash
-http://localhost:3000/api/v1/users/refresh-token
+https://hrms-579n.onrender.com/api/v1/refresh-token
 ```
 > The endpoint `http://localhost:3000/api/v1/users/refresh-token` is a POST request used to refresh the user's access token. Upon successful execution, the response will be in JSON format and can be documented as a JSON schema.
 
@@ -129,7 +129,7 @@ http://localhost:3000/api/v1/users/refresh-token
 
 ### `POST` CreateEmployee
 ```bash
-http://localhost:3000/api/v1/employees
+https://hrms-579n.onrender.com/api/v1/employees
 ```
 > Create New Employee
 This API endpoint is used to create a new employee in the HR management system.
@@ -180,7 +180,7 @@ The response of this request is a JSON object with the following schema:
 
 ### `GET` Exportemployeedetails
 ```bash
-http://localhost:3000/api/v1/employees/export
+https://hrms-579n.onrender.com/api/v1/employees/export
 ```
 > This endpoint sends an HTTP GET request to retrieve an export of employee data.
 
@@ -204,7 +204,7 @@ Example:
 
 ### `GET` GetEmployeeById
 ```bash
-http://localhost:3000/api/v1/employees/67efe61d113fbafa7646f67a
+https://hrms-579n.onrender.com/api/v1/employees/67efe61d113fbafa7646f67a
 ```
 >The endpoint retrieves information about a specific employee by their unique identifier.
 
@@ -218,7 +218,7 @@ http://localhost:3000/api/v1/employees/67efe61d113fbafa7646f67a
 
 ### `DELETE` DeleteEmployeebyId
 ```bash
-http://localhost:3000/api/v1/employees/67effdbd52b0041cb978924a
+https://hrms-579n.onrender.com/api/v1/employees/67effdbd52b0041cb978924a
 ```
 >The DELETE request is used to delete a specific employee with the ID 67f0181f0b946584a0b20ad9 from the HRMS system.
 
@@ -247,7 +247,7 @@ http://localhost:3000/api/v1/employees/67effdbd52b0041cb978924a
 
 ### `GET` GetAllEmployees
 ```bash
-http://localhost:3000/api/v1/employees/
+https://hrms-579n.onrender.com/api/v1/employees/
 ```
 >The endpoint retrieves a list of employees.
 
@@ -345,7 +345,7 @@ http://localhost:3000/api/v1/employees/
 
 ### `PUT` UpdateEmployeedById
 ```bash
-http://localhost:3000/api/v1/employees/67f006e3e096eefb900ccfac
+https://hrms-579n.onrender.com/api/v1/employees/67f006e3e096eefb900ccfac
 ```
 >Update Employee Details
 This endpoint allows the user to update the details of a specific employee.
@@ -394,7 +394,7 @@ This endpoint allows the user to update the details of a specific employee.
 ```
 ### `GET` Search/Filter
 ```bash
-http://localhost:3000/api/v1/employees/search?query=sde
+https://hrms-579n.onrender.com/api/v1/employees/search?query=sde
 ```
 >The endpoint retrieves a list of employees based on the search query provided. The response returned is a JSON object with the following schema:
 
