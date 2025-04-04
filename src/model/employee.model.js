@@ -54,5 +54,5 @@ const employeeSchema = new Schema(
     },
     {timestamps: true}
 )
-
+employeeSchema.index({ name: "text", email: "text", department: "text", position: "text" });
 export const Employee = mongoose.model("Employee", employeeSchema)

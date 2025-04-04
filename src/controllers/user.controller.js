@@ -25,19 +25,14 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 const registerUser = asyncHandler(async (userData) => {
-    const {
-        username, // Create username from email
-        email, 
-        fullname,
-        password, 
-        roleId
-    } = userData
-    if(
-        [username, email, fullname, password, roleId].some((field) => !field)
-    ){
+    const {username, email, fullname, password, roleId} = userData;
+
+    // Validate all fields
+    if(!username || !email || !fullname || !password || !roleId){
         throw new ApiError(400, "All fields are required")
     }
-    //check if user already exists in mongodb using or operator
+
+    // Check for existing user
     const existedUser = await User.findOne({
         $or: [
             { username: username.toLowerCase() }, 
@@ -48,29 +43,28 @@ const registerUser = asyncHandler(async (userData) => {
     if(existedUser){
         throw new ApiError(409, "User with email or username already exists")
     }
-    try {
-        // const salt = await bcrypt.genSalt(10)
-        // const hashedPassword = await bcrypt.hash(password, salt);
-        const user = await User.create({
-            username: username.toLowerCase(),
-            email: email.toLowerCase(),
-            fullname: fullname.toLowerCase(),
-            password: password,
-            role: roleId._id
-        })
+
+    // Create user without nested try-catch
+    const user = await User.create({
+        username: username.toLowerCase(),
+        email: email.toLowerCase(),
+        fullname,
+        password,
+        role: roleId._id
+    });
+
+    const createdUser = await User.findById(user._id)
+        .select("-password -refreshToken")
+        .populate('role');  // Populate role for verification
         
-        const createdUser = await User.findById(user._id).select("-password -refreshToken")
-        if(!createdUser){
-            throw new ApiError(500, "User not created while registering a user")
-        }
-        return createdUser
-    } catch (error) {
-        console.log("user creation failed", error);
-        throw new ApiError(500, "User not created while registering a user")
+    if(!createdUser){
+        throw new ApiError(500, "User creation failed")
     }
+
+    return createdUser;
 })
 const loginUser = asyncHandler(async(req, res) => {
-    console.log(req.body);
+    console.log("Login request incoming")
     const { email, password} = req.body
     if(!email || !password){
         throw new ApiError(400, "Email and password is required");

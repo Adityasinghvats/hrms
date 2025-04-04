@@ -8,47 +8,59 @@ import { User } from "../model/user.model.js";
 
 const createEmployee = asyncHandler(async(req, res) => {
     try {
-        console.log(req.body)
         const {name, email, password, phoneNo, position, department, role} = req.body;
+        
+        // Validate fields
         if(!name || !email || !password || !phoneNo || !position || !department || !role) {
             throw new ApiError(400, "All fields are required")
         }
-        let existingEmployee = await Employee.findOne({email});
+
+        // Check for existing employee once
+        const existingEmployee = await Employee.findOne({email});
         if(existingEmployee){
             return res.status(200).json(
                 new ApiResponse(200, existingEmployee, "Employee already exists")
             )
         }
 
-        // First try to find if role already exists
+        // Handle role
         let roleId = await Role.findOne({ name: role.toLowerCase() });
-    
-        // If role doesn't exist, create it
         if (!roleId) {
-            roleId = await Role.create({ name: role.toLowerCase() });
-            if (!roleId) {
-                throw new ApiError(500, "Role not created while registering a user")
+            try {
+                roleId = await Role.create({ name: role.toLowerCase() });
+                // Wait for the role to be properly saved
+                await roleId.save();
+            } catch (error) {
+                throw new ApiError(500, `Role creation failed: ${error.message}`);
             }
         }
-        console.log("Role:", roleId);
 
+        // Create user if doesn't exist
         let newUser = await User.findOne({email});
         if(!newUser){
             try {
+                if (!roleId?._id) {
+                    throw new ApiError(500, "Role ID is not properly initialized");
+                }
+                
                 newUser = await registerUser({
-                    username: email.split('@')[0], // Create username from email
+                    username: email.split('@')[0],
                     email, 
                     fullname: name,
-                    password: password,
-                    roleId // Pass the role ID, not the entire role object
+                    password,
+                    roleId: roleId // Pass the entire role document
                 });
+                await newUser.save();
+
+                if (!newUser?._id) {
+                    throw new ApiError(500, "User creation failed - no ID returned");
+                }
             } catch (error) {
-                throw new ApiError(500, `NewUser creation failed: ${error.message}`)
+                throw new ApiError(500, `User creation failed: ${error.message}`);
             }
         }
-        console.log(newUser)
 
-        const employeeData = {  // Fixed typo from employeData to employeeData
+        const employee = await Employee.create({
             employeeId: newUser._id,
             name: newUser.fullname,
             email: newUser.email,
@@ -56,31 +68,18 @@ const createEmployee = asyncHandler(async(req, res) => {
             department,
             position,
             joiningDate: new Date(),
-        };
-        console.log("Creating employee with data:", employeeData);
-        let employee = await Employee.findOne({email});
-        if(employee){
-            return res.status(200).json(
-                new ApiResponse(200, employee, "Employee already exists")
-            )
-        }
-        
-        try {
-            employee = await Employee.create(employeeData);  // Using correct variable name
-        } catch (error) {
-            console.log("Error creating employee:", error);
-            // Cleanup the created user if employee creation fails
-            await User.findByIdAndDelete(newUser._id);
-            throw new ApiError(500, `Employee object creation failed: ${error.message}`);
-        }
-        console.log(employee)
+        });
 
-        return res
-        .status(201)
-        .json( new ApiResponse(201, employee, "Employee created successfully"))
+        return res.status(201).json(
+            new ApiResponse(201, employee, "Employee created successfully")
+        );
+
     } catch (error) {
-        console.log("Employee creation failed")
-        throw new ApiError(500, "Employee was not created while registering a user")
+        if(error.message !== "Employee already exists" && newUser?._id) {
+            await User.findByIdAndDelete(newUser._id);
+        }
+        console.log("Employee creation failed:", error);
+        throw new ApiError(error.statusCode || 500, error.message || "Employee creation failed")
     }
 })
 const getAllEmployees = asyncHandler(async(req, res) => {
@@ -153,7 +152,6 @@ const deleteEmployee = asyncHandler(async(req, res) => {
     }
 })
 const getData = asyncHandler(async(req, res) => {
-    //get all the employee in a csv file
     try {
         const employees = await Employee.find().populate('employeeId');
         if(!employees || employees.length === 0) {
@@ -170,6 +168,27 @@ const getData = asyncHandler(async(req, res) => {
         throw new ApiError(500, "Error fetching employees data", error?.error); 
     }
 })
+const searchEmployee = asyncHandler(async(req, res)=> {
+    try {
+        const {query} = req.query
+        if(!query){
+            return res.status(200).json(
+                new ApiResponse(200, [], "No query found")
+            );
+        }
+        const employees = await Employee.find(
+            { $text: { $search : query}},// Project the text search score
+            { score: {$meta: "textScore"}}
+        ).sort({ score: { $meta: "textScore"}});
+
+        return res.status(200).json(
+            new ApiResponse(200, employees, "Employees fetched successfully using filter")
+        );
+    } catch (error) {
+        console.log("Filter search failed", error?.message)
+        throw new ApiError(500, "Error retrieving data")
+    }
+})
 
 export {
     createEmployee,
@@ -177,5 +196,6 @@ export {
     getEmployeeById,
     updateEmployee,
     deleteEmployee,
-    getData
+    getData,
+    searchEmployee
 }
