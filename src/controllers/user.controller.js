@@ -3,9 +3,7 @@ import {ApiResponse} from "../utils/ApiResponse.js";
 import {asyncHandler} from "../utils/AsyncHandler.js";
 import {ApiError} from "../utils/ApiError.js";
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-//login,logout,refreshtoken
-//create refreshtoken so that  we can use it while creating the user
+
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -24,45 +22,6 @@ const generateAccessAndRefreshToken = async (userId) => {
         throw new ApiError(500, "Failed to generate access and refresh token")
     }
 }
-const registerUser = asyncHandler(async (userData) => {
-    const {username, email, fullname, password, roleId} = userData;
-
-    // Validate all fields
-    if(!username || !email || !fullname || !password || !roleId){
-        throw new ApiError(400, "All fields are required")
-    }
-
-    // Check for existing user
-    const existedUser = await User.findOne({
-        $or: [
-            { username: username.toLowerCase() }, 
-            { email: email.toLowerCase() }
-        ]
-    })
-
-    if(existedUser){
-        throw new ApiError(409, "User with email or username already exists")
-    }
-
-    // Create user without nested try-catch
-    const user = await User.create({
-        username: username.toLowerCase(),
-        email: email.toLowerCase(),
-        fullname,
-        password,
-        role: roleId._id
-    });
-
-    const createdUser = await User.findById(user._id)
-        .select("-password -refreshToken")
-        .populate('role');  // Populate role for verification
-        
-    if(!createdUser){
-        throw new ApiError(500, "User creation failed")
-    }
-
-    return createdUser;
-})
 const loginUser = asyncHandler(async(req, res) => {
     console.log("Login request incoming")
     const { email, password} = req.body
@@ -162,6 +121,5 @@ const refreshAccessToken = asyncHandler(async(req, res) => {
 export {
     loginUser,
     logoutuser,
-    registerUser,
     refreshAccessToken
 }

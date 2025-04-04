@@ -1,87 +1,69 @@
 import {Role} from "../model/role.model.js";
 import {Employee} from "../model/employee.model.js";
-import { registerUser } from "./user.controller.js";
 import {asyncHandler} from "../utils/AsyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import {ApiError} from "../utils/ApiError.js";
 import { User } from "../model/user.model.js";
 
 const createEmployee = asyncHandler(async(req, res) => {
-    try {
-        const {name, email, password, phoneNo, position, department, role} = req.body;
-        
-        // Validate fields
-        if(!name || !email || !password || !phoneNo || !position || !department || !role) {
-            throw new ApiError(400, "All fields are required")
-        }
+    const {name, email, password, phoneNo, position, department, role} = req.body;
 
-        // Check for existing employee once
+    if(!name || !email || !password || !phoneNo || !position || !department || !role) {
+        return res.status(400).json(
+            new ApiResponse(400, null, "All fields are required")
+        );
+    }
+
+    try {
         const existingEmployee = await Employee.findOne({email});
         if(existingEmployee){
             return res.status(200).json(
                 new ApiResponse(200, existingEmployee, "Employee already exists")
-            )
+            );
+        }
+        let roleDoc = await Role.findOne({ name: role.toLowerCase() });
+        if (!roleDoc) {
+            roleDoc = new Role({ name: role.toLowerCase() });
+            await roleDoc.save();
         }
 
-        // Handle role
-        let roleId = await Role.findOne({ name: role.toLowerCase() });
-        if (!roleId) {
-            try {
-                roleId = await Role.create({ name: role.toLowerCase() });
-                // Wait for the role to be properly saved
-                await roleId.save();
-            } catch (error) {
-                throw new ApiError(500, `Role creation failed: ${error.message}`);
-            }
+        let userDoc = await User.findOne({email});
+    
+        if(!userDoc){
+            userDoc = new User({
+                username: email.split('@')[0].toLowerCase(),
+                email: email.toLowerCase(),
+                fullname: name,
+                password: password,
+                role: roleDoc._id
+            });
+            
+            await userDoc.save();
         }
 
-        // Create user if doesn't exist
-        let newUser = await User.findOne({email});
-        if(!newUser){
-            try {
-                if (!roleId?._id) {
-                    throw new ApiError(500, "Role ID is not properly initialized");
-                }
-                
-                newUser = await registerUser({
-                    username: email.split('@')[0],
-                    email, 
-                    fullname: name,
-                    password,
-                    roleId: roleId // Pass the entire role document
-                });
-                await newUser.save();
-
-                if (!newUser?._id) {
-                    throw new ApiError(500, "User creation failed - no ID returned");
-                }
-            } catch (error) {
-                throw new ApiError(500, `User creation failed: ${error.message}`);
-            }
-        }
-
-        const employee = await Employee.create({
-            employeeId: newUser._id,
-            name: newUser.fullname,
-            email: newUser.email,
+        // Create employee
+        const employee = new Employee({
+            employeeId: userDoc._id,
+            name: userDoc.fullname,
+            email: userDoc.email,
             phoneNo,
             department,
             position,
-            joiningDate: new Date(),
+            joiningDate: new Date()
         });
-
+        
+        await employee.save();
+        
         return res.status(201).json(
             new ApiResponse(201, employee, "Employee created successfully")
         );
-
     } catch (error) {
-        if(error.message !== "Employee already exists" && newUser?._id) {
-            await User.findByIdAndDelete(newUser._id);
-        }
-        console.log("Employee creation failed:", error);
-        throw new ApiError(error.statusCode || 500, error.message || "Employee creation failed")
+        console.error("Employee creation error:", error);
+        return res.status(500).json(
+            new ApiResponse(500, null, `Employee creation failed: ${error.message}`)
+        );
     }
-})
+});
 const getAllEmployees = asyncHandler(async(req, res) => {
     console.log("Fetching all employees")
     try {
