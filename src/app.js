@@ -6,9 +6,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: process.env.NODE_ENV === 'production' 
-        ? 'https://hrms-platform.vercel.app/'
-        : 'http://localhost:5173',
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization']
