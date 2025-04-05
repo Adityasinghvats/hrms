@@ -40,8 +40,8 @@ const loginUser = asyncHandler(async(req, res) => {
     }
     const {accessToken, refreshToken} = await 
     generateAccessAndRefreshToken(user._id);
-    const loggedInUser = await User.findById(user._id)
-    .select("-password -refreshToken")
+    const loggedInUser = await User.findById(user._id).populate('role')
+    .select("-password -refreshToken")//return everything except password and token
     if(!loggedInUser){
         throw new ApiError(401, "Logged in user not found in DB");
     }
@@ -49,12 +49,13 @@ const loginUser = asyncHandler(async(req, res) => {
         httpOnly: true,
         sceure: process.eventNames.NODE_ENV === "production"
     }
+    console.log(loggedInUser?.role?.name)
     return res.status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(
         200, 
-        {user: loggedInUser, accessToken: accessToken}, 
+        {user: loggedInUser, accessToken: accessToken, roleName: loggedInUser?.role?.name}, 
         "User logged in successfully"
     ))
 })
@@ -100,7 +101,7 @@ const refreshAccessToken = asyncHandler(async(req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV==="production",
        }
-       const {accessToken, efreshToken: newRefreshToken} = 
+       const {accessToken, refreshToken: newRefreshToken} = 
        await generateAccessAndRefreshToken(user._id)
        return res
         .status(200)

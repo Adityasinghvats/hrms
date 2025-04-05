@@ -2,7 +2,13 @@
 
 This is a backend API built using `Express` and `Node.js`. The API implements role-based access control `RBAC`, where only users with the admin role have the ability to `create`, `update`, `delete`, and `export` employee data. Other employees can `login`, `logout`, `refresh tokens`, `view all employees`, and `search/filter` employees based on `name`, `email`, `position`, or `department`.
 
-## API Endpoints
+> How RBAC works
+- I have already created a user with the `admin` role.
+- When a user tries to access an endpoint that requires `admin` privileges, the API checks if the user's role is admin.
+- If the user's role is `admin`, the API allows the user to access the endpoint.
+- If the user's role is not admin, the API returns an error message indicating that the user does not have permission to access the endpoint.
+- All Employee modification endpoints are protected by the `admin` role.
+- Only `admin` can create a new Employee with admin role.
 
 ### Admin 
 ```javascript
@@ -11,6 +17,8 @@ This is a backend API built using `Express` and `Node.js`. The API implements ro
     "password": "aditya@01"
 }
 ```
+
+## API Endpoints
 
 ## Healthcheck
 

@@ -24,6 +24,7 @@ const createEmployee = asyncHandler(async(req, res) => {
         let roleDoc = await Role.findOne({ name: role.toLowerCase() });
         if (!roleDoc) {
             roleDoc = new Role({ name: role.toLowerCase() });
+            // ai suggestion
             await roleDoc.save();
         }
 
@@ -38,6 +39,7 @@ const createEmployee = asyncHandler(async(req, res) => {
                 role: roleDoc._id
             });
             
+            //ai suggestion
             await userDoc.save();
         }
 
@@ -123,7 +125,9 @@ const updateEmployee = asyncHandler(async(req, res) => {
 const deleteEmployee = asyncHandler(async(req, res) => {
     try {
         const employee = await Employee.findById(req.params.id);
+        //delete user asscoiated with employee
         await User.findByIdAndDelete(employee.employeeId);
+        //now delete employee
         await Employee.findByIdAndDelete(employee);
         return res.status(200).json(
             new ApiResponse(200, undefined, "Employee deleted successfully")
@@ -142,9 +146,8 @@ const getData = asyncHandler(async(req, res) => {
             );
         }
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', 'attachment; filename=employees.json');
+        res.setHeader('Content-Disposition', 'attachment; filename=employees.json');                                                                                                                                                                                                 
         res.send(JSON.stringify(employees, null, 2));
-        res.end();
     } catch (error) {
         console.log("Error fetching employees data", error?.message);
         throw new ApiError(500, "Error fetching employees data", error?.error); 
@@ -158,6 +161,7 @@ const searchEmployee = asyncHandler(async(req, res)=> {
                 new ApiResponse(200, [], "No query found")
             );
         }
+        //ai suggestion to add textScore
         const employees = await Employee.find(
             { $text: { $search : query}},// Project the text search score
             { score: {$meta: "textScore"}}
