@@ -4,7 +4,7 @@ import {ApiError} from '../utils/ApiError.js';
 import {ApiResponse} from '../utils/ApiResponse.js';
 //verify jwt
 const verifyJwt = async(req,_, next) => {
-  const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer", "")
+  const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ", "")
   if(!token){
     return res.status(401).json(new ApiResponse(401, "Unauthorized, user not found"));
   }
@@ -18,7 +18,7 @@ const verifyJwt = async(req,_, next) => {
     req.user = user
     next()
   } catch (error) {
-    throw new ApiError(401, error?.message || "Invalid access token")
+    return res.status(401).json(new ApiResponse(401, null, error?.message || "Invalid access token"));
   }
 }
 //verify role
