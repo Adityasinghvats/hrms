@@ -31,6 +31,14 @@ https://hrms-579n.onrender.com/api/v1/healthcheck
 
 ### Response
 >The response of this request is a JSON schema, which can be used to check running status of server.
+```javascript
+{
+    "statusCode": 200,
+    "data": "OK",
+    "message": "Health Check Passed",
+    "success": true
+}
+```
 
 
 ## Users
@@ -74,55 +82,29 @@ This endpoint allows users to log in by providing their email and password.
 
 ```javascript
 {
-  "type": "object",
-  "properties": {
-    "statusCode": {
-      "type": "number"
-    },
+    "statusCode": 200,
     "data": {
-      "type": "object",
-      "properties": {
         "user": {
-          "type": "object",
-          "properties": {
-            "_id": {
-              "type": "string"
-            },
-            "username": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "fullname": {
-              "type": "string"
-            },
+            "_id": "67efe4ff445c6971dfc672a4",
+            "username": "aditya",
+            "email": "aditya@gmail.com",
+            "fullname": "aditya",
             "role": {
-              "type": "string"
+                "_id": "67efe4ff445c6971dfc672a0",
+                "name": "admin",
+                "createdAt": "2025-04-04T13:56:15.323Z",
+                "updatedAt": "2025-04-04T13:56:15.323Z",
+                "__v": 0
             },
-            "createdAt": {
-              "type": "string"
-            },
-            "updatedAt": {
-              "type": "string"
-            },
-            "__v": {
-              "type": "number"
-            }
-          }
+            "createdAt": "2025-04-04T13:56:15.722Z",
+            "updatedAt": "2025-04-06T04:58:50.559Z",
+            "__v": 0
         },
-        "accessToken": {
-          "type": "string"
-        }
-      }
+        "accessToken": "",
+        "roleName": "admin"
     },
-    "message": {
-      "type": "string"
-    },
-    "success": {
-      "type": "boolean"
-    }
-  }
+    "message": "User logged in successfully",
+    "success": true
 }
 ```
 
@@ -416,62 +398,24 @@ https://hrms-579n.onrender.com/api/v1/employees/search?query=sde
 
 ```javascript
 {
-  "type": "object",
-  "properties": {
-    "statusCode": {
-      "type": "number"
-    },
-    "data": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "employeeId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "number"
-          },
-          "department": {
-            "type": "string"
-          },
-          "position": {
-            "type": "string"
-          },
-          "joiningDate": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
-          "__v": {
-            "type": "number"
-          },
-          "score": {
-            "type": "number"
-          }
+    "statusCode": 200,
+    "data": [
+        {
+            "_id": "67f20ce9e81f92ef6cddc973",
+            "employeeId": "67f20ce8e81f92ef6cddc971",
+            "name": "abhinav",
+            "email": "abhinav@gmail.com",
+            "phoneNo": 7856457689,
+            "department": "software",
+            "position": "sde",
+            "joiningDate": "2025-04-06T05:11:05.197Z",
+            "createdAt": "2025-04-06T05:11:05.198Z",
+            "updatedAt": "2025-04-06T05:11:05.198Z",
+            "__v": 0,
+            "score": 1.1
         }
-      }
-    },
-    "message": {
-      "type": "string"
-    },
-    "success": {
-      "type": "boolean"
-    }
-  }
+    ],
+    "message": "Employees fetched successfully using filter",
+    "success": true
 }
 ```
-
