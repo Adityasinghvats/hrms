@@ -49,6 +49,7 @@ const loginUser = asyncHandler(async(req, res) => {
         httpOnly: true,
         sceure: process.eventNames.NODE_ENV === "production"
     }
+    //added rolename in res to verify admin in frontend
     console.log(loggedInUser?.role?.name)
     return res.status(200)
     .cookie("accessToken", accessToken, options)

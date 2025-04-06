@@ -13,7 +13,6 @@ const verifyJwt = async(req,_, next) => {
     const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
     if(!user){
       return res.status(401).json(new ApiResponse(401, user, "Unauthorized, user not found"));
-      // throw new ApiError(401, "Unauthorized , token not found")
     }
     req.user = user
     next()
