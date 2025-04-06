@@ -14,7 +14,7 @@ const corsOptions = {
 app.use(
     cors(corsOptions)
 )
-app.options('*', cors(corsOptions))
+
 app.use(express.json({limit:"16kb"}));
 // allow data in url encoded format 
 app.use(express.urlencoded({extended: true, limit:"16kb"}))
