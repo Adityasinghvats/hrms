@@ -122,6 +122,7 @@ export const sendEmail = async (to, username, password, ip = '127.0.0.1') => {
               <li><strong>Username:</strong> ${username}</li>
               <li><strong>Password:</strong> ${password}</li>
             </ul>
+            <p><a href="https://hrms-platform.vercel.app/" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login to your account</a></p>
             <p>Please log in and change your password at your earliest convenience.</p>
           `,
         }
