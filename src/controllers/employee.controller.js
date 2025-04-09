@@ -4,6 +4,7 @@ import {asyncHandler} from "../utils/AsyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import {ApiError} from "../utils/ApiError.js";
 import { User } from "../model/user.model.js";
+import { emailQueue } from "../utils/Mailer.js";
 
 const createEmployee = asyncHandler(async(req, res) => {
     const {name, email, password, phoneNo, position, department, role} = req.body;
@@ -55,6 +56,16 @@ const createEmployee = asyncHandler(async(req, res) => {
         });
         
         await employee.save();
+
+        // After saving the new employee to the database
+        // this a mock queue I need to setuo redis to use bullmq
+        emailQueue.add('sendWelcomeEmail',{
+            to: email,
+            username: email,
+            password: password,
+            ip: req.ip
+        });
+  
         
         return res.status(201).json(
             new ApiResponse(201, employee, "Employee created successfully")
