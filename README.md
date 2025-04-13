@@ -377,6 +377,7 @@ This endpoint allows the user to update the details of a specific employee.
         }
     }
 }
+```
 
 ### Body
 ```javascript
